@@ -1,0 +1,6 @@
+hbase:
+  zookeeper_quorum: master2.oceancloud,master0.oceancloud,master1.oceancloud
+  zookeeper_property.clientPort: 2181
+  zookeeper_znode_parent: /hbase-unsecure
+  client_start_log_errors_counter: 1
+  client_retries_number: 1
