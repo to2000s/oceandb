@@ -1,13 +1,8 @@
 package wanglinxin.online.oceandb.utils;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hbase.HBaseConfiguration;
-import org.apache.hadoop.hbase.HColumnDescriptor;
-import org.apache.hadoop.hbase.HTableDescriptor;
-import org.apache.hadoop.hbase.TableName;
-import org.apache.hadoop.hbase.client.Admin;
-import org.apache.hadoop.hbase.client.Connection;
-import org.apache.hadoop.hbase.client.ConnectionFactory;
+import org.apache.hadoop.hbase.*;
+import org.apache.hadoop.hbase.client.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 
@@ -59,8 +54,8 @@ public class HBaseUtil {
     /**
      * 创建表，输入表名、列族名
      */
-    public void createTable(TableName tableName, String[] columnFamilies) throws IOException {
-        if (! admin.tableExists(tableName)) {
+    public void createTable(String tableName, String[] columnFamilies) throws IOException {
+        if (! admin.tableExists(TableName.valueOf(tableName))) {
             // 表描述对象
             HTableDescriptor hTableDescriptor = new HTableDescriptor(tableName);
 
@@ -80,8 +75,33 @@ public class HBaseUtil {
     /**
      * 删除表，输入表名
      */
-    public void dropTable(String tableNameString) throws IOException {
-        admin.disableTable(TableName.valueOf(tableNameString));
-        admin.deleteTable(TableName.valueOf(tableNameString));
+    public void dropTable(String tableName) throws IOException {
+        admin.disableTable(TableName.valueOf(tableName));
+        admin.deleteTable(TableName.valueOf(tableName));
+    }
+
+    /**
+     * 通过表名、行键查询一行数据
+     */
+    public Result queryTable(String tableName, byte[] rowkey) throws IOException {
+        Table table = connection.getTable(TableName.valueOf(tableName));
+
+        // 查询对象 条件
+        Get get = new Get(rowkey);
+
+        // result 一行
+        Result result = table.get(get);
+        return result;
+    }
+
+    /**
+     * 通过表名、行键、限定符、值插入数据
+     */
+    public void insert(String tableName, byte[] rowkey, byte[] cf, byte[] qualifier, byte[] value) throws IOException {
+        Table table = connection.getTable(TableName.valueOf(tableName));
+
+        Put put = new Put(rowkey);
+        put.addColumn(cf, qualifier, value);
+        table.put(put);
     }
 }
