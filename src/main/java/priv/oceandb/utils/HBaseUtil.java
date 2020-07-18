@@ -1,4 +1,4 @@
-package wanglinxin.online.oceandb.utils;
+package priv.oceandb.utils;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.*;
@@ -10,6 +10,8 @@ import java.io.IOException;
 
 /**
  * HBase操作工具类
+ * 单例
+ * 用注解可以吗？有 Admin Connection这两个变量
  */
 public class HBaseUtil {
 
@@ -33,8 +35,8 @@ public class HBaseUtil {
 
     @Autowired
     private Environment environment;
-    public Connection connection;   // 连接对象
-    public Admin admin;             // 元数据操作对象
+    private Connection connection;   // 连接对象
+    private Admin admin;             // 元数据操作对象
 
     /**
      * HBase连接初始化
@@ -76,22 +78,23 @@ public class HBaseUtil {
      * 删除表，输入表名
      */
     public void dropTable(String tableName) throws IOException {
-        admin.disableTable(TableName.valueOf(tableName));
-        admin.deleteTable(TableName.valueOf(tableName));
+        if (admin.tableExists(TableName.valueOf(tableName))) {
+            admin.disableTable(TableName.valueOf(tableName));
+            admin.deleteTable(TableName.valueOf(tableName));
+        }
     }
 
     /**
      * 通过表名、行键查询一行数据
      */
-    public Result queryTable(String tableName, byte[] rowkey) throws IOException {
+    public Result query(String tableName, byte[] rowkey) throws IOException {
         Table table = connection.getTable(TableName.valueOf(tableName));
 
         // 查询对象 条件
         Get get = new Get(rowkey);
 
         // result 一行
-        Result result = table.get(get);
-        return result;
+        return table.get(get);
     }
 
     /**

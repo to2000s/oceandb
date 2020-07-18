@@ -1,12 +1,15 @@
-package wanglinxin.online.oceandb.utils;
+package priv.oceandb.utils;
 
 import com.google.common.geometry.S2CellId;
 import com.google.common.geometry.S2LatLng;
 import org.apache.hadoop.hbase.util.Bytes;
+import org.springframework.stereotype.Component;
 
 /**
  * 编码工具类
+ * 单例
  */
+@Component
 public class EncodeUtil {
 
     /* 时间相关 */
@@ -101,9 +104,9 @@ public class EncodeUtil {
     }
 
     /**
-     * Time_offset 作为Column
+     * Time_offset 作为Column Qualifier
      */
-    public byte[] getColumn(long timestamp) {
+    public byte[] getQualifier(long timestamp) {
         return getTimeOffsetBytes(timestamp);
     }
 

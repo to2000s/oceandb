@@ -1,4 +1,4 @@
-package wanglinxin.online.oceandb;
+package priv.oceandb;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

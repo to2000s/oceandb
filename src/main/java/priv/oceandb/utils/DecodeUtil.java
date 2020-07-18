@@ -1,12 +1,15 @@
-package wanglinxin.online.oceandb.utils;
+package priv.oceandb.utils;
 
 import com.google.common.geometry.S2CellId;
 import com.google.common.geometry.S2LatLng;
 import org.apache.hadoop.hbase.util.Bytes;
+import org.springframework.stereotype.Component;
 
 /**
  * 解码工具类
+ * 单例
  */
+@Component
 public class DecodeUtil {
 
     /**

@@ -1,8 +1,9 @@
-package wanglinxin.online.oceandb.utils;
+package priv.oceandb.utils;
 
 import org.apache.hadoop.hbase.util.Bytes;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -10,10 +11,14 @@ import org.springframework.test.context.junit4.SpringRunner;
 @SpringBootTest
 public class EncodeAndDecodeTest {
 
+    @Autowired
+    EncodeUtil encodeUtil;
+    @Autowired
+    DecodeUtil decodeUtil;
+
     @Test
     public void test() {
-        EncodeUtil encodeUtil = new EncodeUtil();
-        DecodeUtil decodeUtil = new DecodeUtil();
+
 
         // 示例数据
         long time = 1593864104373L;
@@ -26,7 +31,7 @@ public class EncodeAndDecodeTest {
         double v = 32.34;
 
         byte[] rowkey = encodeUtil.getRowKey(param_id, time, lat, lng, params);
-        byte[] column = encodeUtil.getColumn(time);
+        byte[] column = encodeUtil.getQualifier(time);
         byte[] value = encodeUtil.getValue(lat, lng, v);
 
         System.out.println(Bytes.toLong(Bytes.head(rowkey, 8)));
