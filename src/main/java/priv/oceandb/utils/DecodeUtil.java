@@ -13,10 +13,10 @@ import org.springframework.stereotype.Component;
 public class DecodeUtil {
 
     /**
-     * 输入rowkey，column
+     * 输入rowkey，qualifier
      * 抽取出时间戳，精度为毫秒
      */
-    public long getTimestamp(byte[] rowkey, byte[] column) {
+    public long getTimestamp(byte[] rowkey, byte[] qualifier) {
         // to转换，后面的bytes数组必须满足长度要求！
         return Bytes.toLong(
                 Bytes.add(
@@ -26,7 +26,7 @@ public class DecodeUtil {
         ) * 1000L + Bytes.toLong(
                 Bytes.add(
                         new byte[5],
-                        column
+                        qualifier
                 )
         );
     }

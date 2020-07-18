@@ -3,10 +3,13 @@ package priv.oceandb.utils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.*;
 import org.apache.hadoop.hbase.client.*;
+import org.apache.hadoop.hbase.filter.Filter;
+import org.apache.hadoop.hbase.filter.FilterList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * HBase操作工具类
@@ -106,5 +109,16 @@ public class HBaseUtil {
         Put put = new Put(rowkey);
         put.addColumn(cf, qualifier, value);
         table.put(put);
+    }
+
+    /**
+     * 按照filter要求进行scan
+     */
+    public ResultScanner scan(String tableName, List<Filter> filters) throws IOException {
+        Table table = connection.getTable(TableName.valueOf(tableName));
+
+        Scan scan = new Scan();
+        scan.setFilter(new FilterList(filters));
+        return table.getScanner(scan);
     }
 }
