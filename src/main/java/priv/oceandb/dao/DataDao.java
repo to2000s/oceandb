@@ -28,21 +28,21 @@ public class DataDao {
      * 创建data表
      */
     public void createTable() throws IOException {
-        HBaseUtil.getInstance().createTable("data", new String[] {"data"});
+        HBaseUtil.getInstance().createTable("oceandb_data", new String[] {"data"});
     }
 
     /**
      * 删除data表
      */
     public void dropTable() throws IOException {
-        HBaseUtil.getInstance().dropTable("data");
+        HBaseUtil.getInstance().dropTable("oceandb_data");
     }
 
     /**
      * 通过rowkey qualifier 查询一条数据
      */
     public byte[] query(byte[] rowkey, byte[] qualifier) throws IOException {
-        Result result =  HBaseUtil.getInstance().query("data", rowkey);
+        Result result =  HBaseUtil.getInstance().query("oceandb_data", rowkey);
         if (result.isEmpty()) {
             return null;
         } else {
@@ -55,14 +55,14 @@ public class DataDao {
      * 通过rowkey qualifier value 插入一行数据
      */
     public void insert(byte[] rowkey, byte[] qualifier, byte[] value) throws IOException {
-        HBaseUtil.getInstance().insert("data", rowkey, Bytes.toBytes("data"), qualifier, value);
+        HBaseUtil.getInstance().insert("oceandb_data", rowkey, Bytes.toBytes("data"), qualifier, value);
     }
 
     /**
      * 按filter要求进行scan
      */
-    public DataPoint[] scan(List<Filter> filters) throws IOException {
-        ResultScanner results = HBaseUtil.getInstance().scan("data", filters);
+    public List<DataPoint> scan(List<Filter> filters) throws IOException {
+        ResultScanner results = HBaseUtil.getInstance().scan("oceandb_data", filters);
         if (results == null) {
             return null;
         } else {
@@ -77,7 +77,8 @@ public class DataDao {
                     dataPoints.add(transferUtil.trans2data(rowkey, qualifier, value));
                 }
             }
-            return dataPoints.toArray(new DataPoint[dataPoints.size()]);
+//            return dataPoints.toArray(new DataPoint[dataPoints.size()]);
+            return dataPoints;  // 集合更好使，否则之后再次筛选又要创建新数组
         }
     }
 

@@ -15,7 +15,8 @@ public class ManageController {
     ManageService manageService;
 
     @RequestMapping("/init")
-    public void init() throws IOException {
+    public String init() throws IOException {
         manageService.init();
+        return "init success";
     }
 }

@@ -19,14 +19,14 @@ public class IdDao {
      * 创建id表
      */
     public void createTable() throws IOException {
-        HBaseUtil.getInstance().createTable("id", new String[] {"name", "id"});
+        HBaseUtil.getInstance().createTable("oceandb_id", new String[] {"name", "id"});
     }
 
     /**
      * 删除id表
      */
     public void dropTable() throws IOException {
-        HBaseUtil.getInstance().dropTable("id");
+        HBaseUtil.getInstance().dropTable("oceandb_id");
     }
 
     /**
@@ -37,12 +37,12 @@ public class IdDao {
      * 0 1 2 指定 qualifier
      */
     public byte[] getId(String name, int qualifer) throws IOException {
-        Result result = HBaseUtil.getInstance().query("id", Bytes.toBytes(name));
+        Result result = HBaseUtil.getInstance().query("oceandb_id", Bytes.toBytes(name));
         // 结果集为空，建立映射
         if (result.isEmpty()) {
             return createId(name, qualifer);
         } else {
-            byte[] id = result.getValue(Bytes.toBytes("name"),Bytes.tail(Bytes.toBytes(qualifer), 1));
+            byte[] id = result.getValue(Bytes.toBytes("id"),Bytes.tail(Bytes.toBytes(qualifer), 1));
             return id == null ? createId(name, qualifer) : id;
         }
     }
@@ -51,11 +51,11 @@ public class IdDao {
      * 获取id对应的name
      */
     public String getName(byte[] id, int qualifer) throws IOException {
-        Result result = HBaseUtil.getInstance().query("id", id);
+        Result result = HBaseUtil.getInstance().query("oceandb_id", id);
         if (result.isEmpty()) {
             return null;
         }
-        byte[] name = result.getValue(Bytes.toBytes("id"),Bytes.tail(Bytes.toBytes(qualifer), 1));
+        byte[] name = result.getValue(Bytes.toBytes("name"),Bytes.tail(Bytes.toBytes(qualifer), 1));
         return Bytes.toString(name);
     }
 
@@ -78,13 +78,13 @@ public class IdDao {
 
         // 建立映射
         HBaseUtil.getInstance().insert(
-                "id",
+                "oceandb_id",
                 Bytes.toBytes(name),
                 Bytes.toBytes("id"),
                 Bytes.tail(Bytes.toBytes(qualifer), 1),
                 id);
         HBaseUtil.getInstance().insert(
-                "id",
+                "oceandb_id",
                 id,
                 Bytes.toBytes("name"),
                 Bytes.tail(Bytes.toBytes(qualifer), 1),

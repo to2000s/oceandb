@@ -1,12 +1,13 @@
 package priv.oceandb.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.lang.Nullable;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import priv.oceandb.model.DataPoint;
+import priv.oceandb.model.RequestParams;
 import priv.oceandb.service.ReadService;
+
+import java.io.IOException;
+import java.util.List;
 
 @RestController
 @RequestMapping("/read")
@@ -15,15 +16,29 @@ public class ReadController {
     @Autowired
     ReadService readService;
 
-    @GetMapping("/query")
-    public DataPoint query(String param, long timestamp, double lat, double lng, String[] props) {
-        return readService.query(param, timestamp, lat, lng, props);
+    @PostMapping("/query")
+    public DataPoint query(@RequestBody DataPoint params) throws IOException {
+        return readService.query(params);
     }
 
-    @GetMapping("scan")
-    public DataPoint[] scan(String param, long[] timestamps, @Nullable double[] latLng, @Nullable String[] props) {
-        // TODO 研究一下传入参数为空的情况
-        return readService.scan(param, timestamps, latLng, props);
+    @PostMapping("scan")
+    public List<DataPoint> scan(@RequestBody RequestParams params) throws IOException {
+        // 请求参数各部分为空的情况，组合
+
+        if (params.getParam() != null &&
+            params.getPeriod() != null &&
+            params.getArea() == null &&
+            params.getProps() == null) {
+            return readService.scan(params.getParam(), params.getPeriod());
+        }
+        if (params.getParam() != null &&
+                params.getPeriod() == null &&
+                params.getArea() != null &&
+                params.getProps() == null) {
+            return readService.scan(params.getParam(), params.getArea());
+        }
+
+        return null;
     }
 
 }

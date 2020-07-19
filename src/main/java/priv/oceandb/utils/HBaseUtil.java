@@ -46,12 +46,18 @@ public class HBaseUtil {
      */
     private void init() throws IOException {
         Configuration conf = HBaseConfiguration.create();
-        conf.set("hbase.zookeeper.quorum", environment.getProperty("hbase.zookeeper_quorum"));
-        conf.set("hbase.zookeeper.property.clientPort", environment.getProperty("hbase.zookeeper_property.clientPort"));
-        conf.set("zookeeper.znode.parent", environment.getProperty("hbase.zookeeper_znode_parent"));
-        conf.set("hbase.client.start.log.errors.counter", environment.getProperty("hbase.client_start_log_errors_counter"));
-        conf.set("hbase.client.retries.number", environment.getProperty("hbase.client_retries_number"));
+        // 配置有些问题，environment是空的
+//        conf.set("hbase.zookeeper.quorum", environment.getProperty("hbase.zookeeper_quorum"));
+//        conf.set("hbase.zookeeper.property.clientPort", environment.getProperty("hbase.zookeeper_property.clientPort"));
+//        conf.set("zookeeper.znode.parent", environment.getProperty("hbase.zookeeper_znode_parent"));
+//        conf.set("hbase.client.start.log.errors.counter", environment.getProperty("hbase.client_start_log_errors_counter"));
+//        conf.set("hbase.client.retries.number", environment.getProperty("hbase.client_retries_number"));
 
+        conf.set("hbase.zookeeper.quorum", "master2.oceancloud,master0.oceancloud,master1.oceancloud");
+        conf.set("hbase.zookeeper.property.clientPort", "2181");
+        conf.set("zookeeper.znode.parent", "/hbase-unsecure");
+        conf.set("hbase.client.start.log.errors.counter", "1");
+        conf.set("hbase.client.retries.number", "1");
         connection = ConnectionFactory.createConnection(conf);
         admin = connection.getAdmin();
     }
@@ -119,6 +125,20 @@ public class HBaseUtil {
 
         Scan scan = new Scan();
         scan.setFilter(new FilterList(filters));
+
+        return table.getScanner(scan);
+    }
+
+    /**
+     * 按照filter要求进行scan
+     */
+    public ResultScanner scan(String tableName, List<Filter> passAllFilters, List<Filter> passOnefilters) throws IOException {
+        Table table = connection.getTable(TableName.valueOf(tableName));
+
+        Scan scan = new Scan();
+        scan.setFilter(new FilterList(passAllFilters));
+        scan.setFilter(new FilterList(passOnefilters));
+
         return table.getScanner(scan);
     }
 }
