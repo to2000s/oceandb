@@ -82,9 +82,26 @@ public class DataDao {
         }
     }
 
+    public List<DataPoint> scan(List<Filter> passAllFilters, List<Filter> passOneFilters) throws IOException {
+        ResultScanner results = HBaseUtil.getInstance().scan("oceandb_data", passAllFilters, passOneFilters);
+        if (results == null) {
+            return null;
+        } else {
+            List<DataPoint> dataPoints = new ArrayList<>();
+            for (Result result : results) {
+                byte[] rowkey = result.getRow();
 
-
-
+                Map<byte[], byte[]> familyMap = result.getFamilyMap(Bytes.toBytes("data"));
+                for(Map.Entry<byte[], byte[]> entry:familyMap.entrySet()){
+                    byte[] qualifier = entry.getKey();
+                    byte[] value = entry.getValue();
+                    dataPoints.add(transferUtil.trans2data(rowkey, qualifier, value));
+                }
+            }
+//            return dataPoints.toArray(new DataPoint[dataPoints.size()]);
+            return dataPoints;  // 集合更好使，否则之后再次筛选又要创建新数组
+        }
+    }
 
 
     /* ... */

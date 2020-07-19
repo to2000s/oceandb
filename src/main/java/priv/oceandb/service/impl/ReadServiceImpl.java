@@ -83,8 +83,7 @@ public class ReadServiceImpl implements ReadService {
     @Override
     public List<DataPoint> scan(String param, long[] timestamp) throws IOException {
 
-        byte[] paramId = cacheUtil.getId(param, 0, 0) == null ?
-                idDao.getId(param, 0) : cacheUtil.getId(param, 0, 0);
+        byte[] paramId = cacheUtil.getId(param, 0, 0);
         byte[] start = Bytes.add(paramId, encodeUtil.getTimeBaseBytes(timestamp[0]));
         byte[] end = Bytes.add(paramId, encodeUtil.getTimeBaseBytes(timestamp[1]));
 
@@ -117,8 +116,7 @@ public class ReadServiceImpl implements ReadService {
 
         List<DataPoint> result = new ArrayList<>();
 
-        byte[] paramId = cacheUtil.getId(param, 0, 0) == null ?
-                idDao.getId(param, 0) : cacheUtil.getId(param, 0, 0);
+        byte[] paramId = cacheUtil.getId(param, 0, 0);
 
         List<S2Point> vertices = new ArrayList<>();
         for (int i = 0; i < latLng.length / 2; i++) {
@@ -141,43 +139,55 @@ public class ReadServiceImpl implements ReadService {
             s2CellIds.addAll(childrenCellId(id, 10));
 //            System.out.println(id.toToken());
         }
-        System.out.println(s2CellIds.size());
+//        System.out.println(s2CellIds.size());
 
         // 对所有level 10 的cellId进行判断
         // 完全在区域内，筛选出的所有数据都符合要求
         // 不完全在区域内，进一步判断每个data point
+        List<S2CellId> ids0 = new ArrayList<>();
+        List<S2CellId> ids1 = new ArrayList<>();
         for (S2CellId id : s2CellIds) {
 
             if (s2Polygon.contains(new S2Cell(id))) {
-                // 每次都遍历，效率是否慢了些，至少param的对比有多余
-                // 满足param条件，其余条件满足一个即可，怎么表示呢？
-                // 暂时每次都遍历
-                List<Filter> filters = new ArrayList<>();
-                filters.add(
-                        new RowFilter(CompareFilter.CompareOp.EQUAL, new BinaryPrefixComparator(paramId))
-                );
-                filters.add(
-                        new AreaFilter(Bytes.head(Bytes.toBytes(id.id()), 3))
-                );
-                result.addAll(dataDao.scan(filters));
-                System.out.println("Y");
+                ids0.add(id);
             } else {
-                List<Filter> filters = new ArrayList<>();
-                filters.add(
-                        new RowFilter(CompareFilter.CompareOp.EQUAL, new BinaryPrefixComparator(paramId))
-                );
-                filters.add(
-                        new AreaFilter(Bytes.head(Bytes.toBytes(id.id()), 3))
-                );
+                ids1.add(id);
+            }
+        }
 
-                List<DataPoint> dataPoints = dataDao.scan(filters);
-                for (DataPoint point : dataPoints) {
-                    //判断数据点是否在区域内
-                    if (s2Polygon.contains(S2LatLng.fromDegrees(point.getLat(), point.getLng()).toPoint())) {
-                        result.add(point);
-                    }
+        List<Filter> passAllFilters0 = new ArrayList<>();
+        List<Filter> passOneFilters0 = new ArrayList<>();
+        for (S2CellId id : ids0) {
+            // 每次都遍历，效率比较慢了些
+            // 满足param条件，其余条件满足一个即可
+            passOneFilters0.add(
+                    new AreaFilter(Bytes.head(Bytes.toBytes(id.id()), 3))
+            );
+        }
+        passAllFilters0.add(
+                new RowFilter(CompareFilter.CompareOp.EQUAL, new BinaryPrefixComparator(paramId))
+        );
+        result.addAll(dataDao.scan(passAllFilters0, passOneFilters0));
+
+        // 不包含的只能一个个判断了
+        List<Filter> passAllFilters1 = new ArrayList<>();
+        List<Filter> passOneFilters1 = new ArrayList<>();
+        for (S2CellId id : ids1) {
+            passOneFilters1.add(
+                    new AreaFilter(Bytes.head(Bytes.toBytes(id.id()), 3))
+            );
+        }
+        passAllFilters1.add(
+                new RowFilter(CompareFilter.CompareOp.EQUAL, new BinaryPrefixComparator(paramId))
+        );
+
+        List<DataPoint> temp = dataDao.scan(passAllFilters1, passOneFilters1);
+        if (temp != null) {
+            for (DataPoint point : temp) {
+                //判断数据点是否在区域内
+                if (s2Polygon.contains(S2LatLng.fromDegrees(point.getLat(), point.getLng()).toPoint())) {
+                    result.add(point);
                 }
-                System.out.println("N");
             }
         }
 

@@ -137,7 +137,7 @@ public class HBaseUtil {
 
         Scan scan = new Scan();
         scan.setFilter(new FilterList(passAllFilters));
-        scan.setFilter(new FilterList(passOnefilters));
+        scan.setFilter(new FilterList(FilterList.Operator.MUST_PASS_ONE, passOnefilters));
 
         return table.getScanner(scan);
     }

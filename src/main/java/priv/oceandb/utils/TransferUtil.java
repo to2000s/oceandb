@@ -34,13 +34,11 @@ public class TransferUtil {
         double v = dataPoint.getValue();
 
         // 先读缓存，再读数据库
-        byte[] paramId = cacheUtil.getId(param, 0, 0) == null ?
-                idDao.getId(param, 0) : cacheUtil.getId(param, 0, 0);
+        byte[] paramId = cacheUtil.getId(param, 0, 0);
         byte[][] propsId = new byte[props.length][];
         for (int i = 0; i < props.length; i++) {
             // 1 2 1 2
-            propsId[i] = cacheUtil.getId(props[i], 0, i / 2 + 1) == null ?
-                    idDao.getId(props[i], i / 2 + 1) : cacheUtil.getId(props[i], 0, i / 2 + 1);
+            propsId[i] = cacheUtil.getId(props[i], 0, i / 2 + 1);
         }
 
         // 存入HBase的各部分
@@ -60,15 +58,13 @@ public class TransferUtil {
         double v = decodeUtil.getValue(value);
 
         // 将 param props 的 id 转换为 name
-        String param = cacheUtil.getName(paramId, 1, 0) == null ?
-                idDao.getName(paramId, 0) : cacheUtil.getName(paramId, 1, 0);
+        String param = cacheUtil.getName(paramId, 1, 0);
         String[] props = new String[propsId.length / 3];
         for (int i = 0; i < propsId.length / 3; i++) {
             // copy(byte[] b, int off, int len)   0 1 2 | 3
             byte[] temp = Bytes.copy(propsId, i * 3, 3);
             // 1 2 1 2
-            props[i] = cacheUtil.getName(temp, 1, i / 2 + 1) == null ?
-                    idDao.getName(temp, i / 2 + 1) : cacheUtil.getName(temp, 1, i / 2 + 1);
+            props[i] = cacheUtil.getName(temp, 1, i / 2 + 1);
         }
 
         return new DataPoint(param, timestamp, latLng[0], latLng[1], props, v);
